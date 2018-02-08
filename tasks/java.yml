@@ -1,0 +1,21 @@
+---
+  - name: "Install OpenJDK"
+    apt:
+      name: "{{ item }}"
+      state: present
+    with_items:
+      - "openjdk-{{ java.version }}-jdk"
+      - ca-certificates
+
+  - name: "Check if JAVA_HOME is set"
+    stat:
+      path: /etc/profile.d/java.sh
+    register: javaHome
+
+  - name: "set JAVA_HOME"
+    lineinfile:
+      path: /etc/profile.d/java.sh
+      line: "JAVA_HOME=/usr/lib/jvm/java-{{ java.version }}-openjdk-amd64"
+      create: yes
+      state: present
+    when: not javaHome.stat.exists

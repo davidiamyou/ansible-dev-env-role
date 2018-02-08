@@ -14,7 +14,7 @@
     redis: false
     httpie: false
 
-  # configuration defaults for git.
+  # configuration defaults for installing and configuring git.
   git:
     # if <useExistingKey> == false, role will try to generate a new ssh key
     # by the name of <keyName> under ~/.ssh
@@ -23,3 +23,7 @@
     useExistingKey: false
     existingKeyPath: /home/vagrant/from-host/ssh-keys/id_rsa
     keyName: id_rsa
+
+  # configuration defaults for installing OpenJDK
+  java:
+    version: 8

@@ -1,7 +1,4 @@
 ---
-  - debug:
-      var: git
-
   - name: "Check for required properties"
     fail:
       msg: "Property '{{ item }}' is required but not defined."
