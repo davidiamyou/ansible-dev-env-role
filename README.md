@@ -1,38 +1,238 @@
-Role Name
+Ansible Development Environment
 =========
 
-A brief description of the role goes here.
+An Ansible role to install and configure necessary softwares and toolings for the personal development environment in Vagrant boxes.
+
+Currently, it supports:
+- Install and configure author information and ssh key pairs for `git`
+- Install Java (OpenJDK) and set `JAVA_HOME`
+- Install Maven and set `M2_HOME`
+- Install Docker
+- Install `kubectl` and configure it to connect to remote cluster
+- Install `helm`
+- Install `httpie`
+- Install MongoDB and configure it
+
+It plans to support in the future:
+- Add tags to allow more granular control
+- Install Go, set `GOROOT` and set `GOPATH`
+- Install Gradle
+- Install and configure MariaDB
+- Install and configure Redis
+- Install and configure RabbitMQ
 
 Requirements
 ------------
 
-Any pre-requisites that may not be covered by Ansible itself or the role should be mentioned here. For instance, if the role uses the EC2 module, it may be a good idea to mention in this section that the boto package is required.
+This role is solely designed for `Ubuntu xenial` Vagrant images. User also must create a yaml config file under `/home/vagrant/from-host/config` folder. The entries of that config file can be seen in the **Role Variables** section.
 
-Role Variables
+Configuration Options
 --------------
 
-A description of the settable variables for this role should go here, including any variables that are in defaults/main.yml, vars/main.yml, and any variables that can/should be set via parameters to the role. Any variables that are read from other roles and/or the global scope (ie. hostvars, group vars, etc.) should be mentioned here as well.
+Users can provide a list of variable overrides from yaml files placed in
+`/home/vagrant/from-host/config` folder. This folder can either be manually
+created or be loaded from the host machine running Vagrant.
 
-Dependencies
-------------
+### Install Toggles
 
-A list of other roles hosted on Galaxy should go here, plus any details in regards to parameters that may need to be set for other roles, or variables that are used from other roles.
+Install toggles to select which software package should be installed and
+configured.
 
-Example Playbook
-----------------
+Key | Default
+--- | ---
+`install.git` | `true`
+`install.*` | `false`
 
-Including an example of how to use your role (for instance, with variables passed in as parameters) is always nice for users too:
+Example config to install `git`, `java`, `maven` and `httpie`:
+```
+install:
+  git: true
+  java: true
+  maven: true
+  gradle: false
+  go: false
+  kubectl: false
+  helm: false
+  docker: false
+  mongodb: false
+  mariadb: false
+  redis: false
+  httpie: true
+```
 
-    - hosts: servers
-      roles:
-         - { role: username.rolename, x: 42 }
+### Git Variables
 
-License
--------
+When `install.git` is `true`, this role will perform its jobs related to git.
+If `git.useExistingKey` is set to `true`, this role will look for
+`git.existingKeyPath` and the corresponding public key (`.pub`) files and copy
+them to `/home/vagrant/.ssh/` under the name `git.keyName`.
 
-BSD
+If `git.useExistingKey` is set to `false`, it will generate a new key pair
+using the name specified by `git.keyName`.
 
-Author Information
-------------------
+Key | Default
+--- | ---
+`git.useExistingKey` | `false`
+`git.existingKeyPath` | `/home/vagrant/from-host/ssh-keys/id_rsa`
+`git.keyName` | `id_rsa`
 
-An optional section for the role authors to include contact information, or a website (HTML is not allowed).
+Example config to use existing key pair call `my_key` and copy over as `id_rsa`:
+```
+git:
+  useExistingKey: true
+  existingKeyPath: /home/vagrant/from-host/ssh-keys/my_key
+  keyName: id_rsa
+```
+
+### Java Variables
+
+If `install.java` is `true`, this role installs OpenJDK from apt-repository and
+sets up `JAVA_HOME`.
+
+Key | Default
+--- | ---
+`java.version` | `8`
+
+Example config to install OpenJDK 8:
+```
+java:
+  version: 8
+```
+
+### Maven Variables
+
+If `install.maven` is `true`, this role downloads Maven archive, unarchives it
+and puts it to `maven.home`. It then creates a profile file to setup `M2_HOME`
+environment variable. In addition, if `maven.forceReinstall` is set to `true`,
+the role will attempt to uninstall existing installation first and install a
+fresh copy. This is useful when we want to upgrade Maven.
+
+Key | Default
+--- | ---
+`maven.forceReinstall` | `false`
+`maven.version` | `3.5.2`
+`maven.home` | `/usr/lib/maven`
+
+Example config to _downgrade_ to Maven `3.3.0`:
+```
+maven:
+  forceReinstall: true
+  version: 3.3.0
+  home: /usr/lib/maven
+```
+
+### Kubectl Variables
+
+If `install.kubectl` is set to `true`, this role will try to install and
+configure kubectl. The script will only install kubectl when this is no existing
+installation of `kubectl` binary under `kubectl.installDir`. However, this
+behaviour can be overriden by `kubectl.forceReinstall`, which will perform
+uninstallation first and then a fresh installation. Note the the uninstallation
+process will also remove any config files at `<kubectl.config.targetDir>/<kubectl.config.name>`.
+
+As for the configuration side, when `kubectl.config.sourceFile` is set, the script
+will just copy the config file at `kubectl.config.sourceFile` to
+`<kubectl.config.targetDir>/<kubectl.config.name>`. Otherwise, it will attempt
+to render the config file using variables defined under `kubectl.config.props.*`.
+
+The options provided by `kubectl.config.props.*` is slightly more restrictive
+than a plain kubectl client config file. It assumes only one cluster, one context
+and one user, and therefore simplifies the list entries to only one options. This
+should fit most needs, however, if multiple user and multiple contexts are needed,
+user can always provide a complete config at `kubectl.config.sourceFile`.
+
+Key | Default
+--- | ---
+`kubectl.forceReinstall` | `false`
+`kubectl.version` | `1.9.2`
+`kubectl.installDir` | `/usr/local/bin`
+`kubectl.config.name` | `config`
+`kubectl.config.targetDir` | `/home/vagrant/.kube`
+`kubectl.config.props.cluster.certificateAuthorityData` | blank
+`kubectl.config.props.cluster.insecureSkipTLSVerify` | `false`
+`kubectl.config.props.user.name` | `admin`
+
+When `kubectl.config.sourceFile` is not set, the following variables must be set:
+- `kubectl.config.props.cluster.name`
+- `kubectl.config.props.cluster.server`
+- `kubectl.config.props.context.name`
+- `kubectl.config.props.user.password`
+
+Example configuration to install kubectl version 1.9.2 and configure it to target
+a home cluster.
+```
+kubectl:
+  forceReinstall: false
+  version: 1.9.2
+  installDir: /usr/local/bin
+  config:
+    name: config
+    targetDir: /home/vagrant/.kube
+    props:
+      cluster:
+        name: juju-cluster
+        certificateAuthorityData: ""
+        server: https://192.168.100.199:443
+        insecureSkipTLSVerify: false
+      context:
+        name: juju-context
+      user:
+        name: admin
+        password: redacted
+```
+
+### Helm Variables
+
+If `install.helm` is set to `true`, the script will attempt to install helm of
+version `helm.version` to `helm.installDir`. If `helm.forceReinstall` is set,
+the script will attempt to remove existing helm first.
+
+Key | Default
+--- | ---
+`helm.forceReinstall` | `false`
+`helm.version` | `2.6.0`
+`helm.installDir` | `/usr/local/bin`
+
+Example config to install helm:
+```
+helm:
+  forceReinstall: false
+  version: 2.6.0
+  installDir: /usr/local/bin
+```
+
+### Mongo Variables
+
+If `install.mongo` is set to `true`, the script will attempt to install mongoDB.
+However, the script will skip if MongoDB is already installed. During
+configuration, if `mongo.config.sourceFile` is set, the script will copy the
+file to `mongo.config.targetFile`; otherwise, it will try to render the config
+file using values under `mongo.config.props.*`. The script will restart MongoDB
+after config file is in place.
+
+Key | Default
+--- | ---
+`mongo.version` | `3.6`
+`mongo.config.targetFile` | `/etc/mongod.conf`
+`mongo.config.props.port` | `27017`
+`mongo.config.props.ip` | `listOf(127.0.0.1)`
+
+Example config to install MongoDB and configure it listen for requests on both
+`127.0.0.1` and `192.168.35.100` interface.
+```
+mongo:
+  version: 3.6
+  config:
+    targetFile: /etc/mongod.conf
+    props:
+      port: 27017
+      ip:
+        - 127.0.0.1
+        - 192.168.35.100
+```
+
+### Other Variables
+
+Key | Default | Use
+--- | --- | ---
+`ops.downloadDir` | `/tmp` | used for downloading temporary files
