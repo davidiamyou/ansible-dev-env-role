@@ -27,3 +27,16 @@
   # configuration defaults for installing OpenJDK
   java:
     version: 8
+
+  # configuration defaults for installing and configuring maven
+  maven:
+    # By default, script will do nothing if there is an existing maven
+    # installation. User can override this option to ask the script to
+    # remove any existing installation and install a new one.
+    forceReinstall: false
+    version: 3.5.2
+    home: /usr/lib/maven
+
+  # defaults for playbook operations (internal)
+  ops:
+    downloadDir: /tmp

@@ -1,0 +1,64 @@
+---
+  # =========================================================
+  # Check if there is already an installation, remove if true
+  # =========================================================
+  - name: "Check if maven exists"
+    stat:
+      path: "{{ maven.home }}"
+    register: oldMaven
+
+  - name: "Remove maven if exists"
+    file:
+      path: "{{ maven.home }}"
+      state: absent
+    when: oldMaven.stat.exists and maven.forceReinstall
+
+  - name: "Remove maven home declaration if exists"
+    file:
+      path: /etc/profile.d/maven.sh
+      state: absent
+    when: oldMaven.stat.exists and maven.forceReinstall
+
+  - name: "Remove any temporary download files"
+    file:
+      path: "{{ ops.downloadDir }}/maven.tar.gz"
+      state: absent
+
+  # ==========================
+  # Start installing new maven
+  # ==========================
+  - name: "Download maven binaries"
+    get_url:
+      url: "http://www.apache.org/dist/maven/maven-3/{{ maven.version }}/binaries/apache-maven-{{ maven.version }}-bin.tar.gz"
+      dest: "{{ ops.downloadDir }}/maven.tar.gz"
+    when: not oldMaven.stat.exists or maven.forceReinstall
+
+  - name: "Unarchive maven binaries"
+    unarchive:
+      src: "{{ ops.downloadDir }}/maven.tar.gz"
+      dest: "{{ ops.downloadDir }}"
+    when: not oldMaven.stat.exists or maven.forceReinstall
+
+  - name: "Move maven into place"
+    command: "mv {{ ops.downloadDir }}/apache-maven-{{ maven.version }} {{ maven.home }}"
+    when: not oldMaven.stat.exists or maven.forceReinstall
+
+  - name: "Create maven home declaration"
+    lineinfile:
+      path: /etc/profile.d/maven.sh
+      line: "{{ item }}"
+      create: yes
+      state: present
+    with_items:
+      - "M2_HOME={{ maven.home }}"
+      - "PATH=$PATH:$M2_HOME/bin"
+    when: not oldMaven.stat.exists or maven.forceReinstall
+
+  # ========
+  # Clean up
+  # ========
+  - name: "Clean up downloaded files"
+    file:
+      path: "{{ ops.downloadDir }}/maven.tar.gz"
+      state: absent
+    when: not oldMaven.stat.exists or maven.forceReinstall
