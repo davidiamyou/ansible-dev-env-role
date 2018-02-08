@@ -37,6 +37,59 @@
     version: 3.5.2
     home: /usr/lib/maven
 
+  # configuration defaults for kubectl
+  kubectl:
+    forceReinstall: false
+    version: 1.9.2
+    installDir: /usr/local/bin
+    config:
+      # if <kubectl.config.sourceFile> is defined, script will attempt to copy
+      # <kubectl.config.sourceFile> to <kubectl.config.targetFile>.
+      # else, script will attempt to render the included template with provided
+      # properties under <kubectl.config.props.*>
+      # caution that when <kubectl.config.sourceFile> is undefined, script will
+      # assume entries under <kubectl.config.props.*> are properly set, it will
+      # not perform any checks.
+      # sourceFile:
+      name: config
+      targetDir: /home/vagrant/.kube
+      props:
+        cluster:
+          # cluster name is required if
+          # <kubectl.config.sourceFile> is undefined
+          # name: ""
+          # cluster certificate authority data is optional
+          certificateAuthorityData: ""
+          # cluster server address is required if
+          # <kubectl.config.sourceFile> is undefined
+          # server: ""
+          insecureSkipTLSVerify: false
+        context:
+          # NOTICE
+          # Although kubernetes config provides configuration options for
+          # multiple contexts and the ability to select one configured
+          # context through 'current-context', we assume there is only one
+          # context if user configures kubectl with ansible variables. To
+          # configure multiple contexts, use <kubectl.config.sourceFile>
+          # instead.
+          #
+          # context name is required if
+          # <kubectl.config.sourceFile> is undefined
+          # This name will be binded to <kubectl.config.props.cluster.name> and
+          # will use <kubectl.config.props.user.name> as user
+          # name: ""
+        user:
+          name: admin
+          # user password is required if
+          # <kubectl.config.sourceFile> is undefined
+          # password: ""
+
+  # configuration defaults for helm
+  helm:
+    forceReinstall: false
+    version: 2.6.0
+    installDir: /usr/local/bin
+
   # defaults for playbook operations (internal)
   ops:
     downloadDir: /tmp

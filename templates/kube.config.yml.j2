@@ -1,0 +1,21 @@
+apiVersion: v1
+clusters:
+- cluster:
+    certificate-authority-data: {{ kubectl.config.props.cluster.certificateAuthorityData }}
+    server: {{ kubectl.config.props.cluster.server }}
+    insecure-skip-tls-verify: {{ kubectl.config.props.cluster.insecureSkipTLSVerify }}
+  name: {{ kubectl.config.props.cluster.name }}
+contexts:
+- context:
+    cluster: {{ kubectl.config.props.cluster.name }}
+    user: {{ kubectl.config.props.user.name }}
+  name: {{ kubectl.config.props.context.name }}
+current-context: {{ kubectl.config.props.context.name }}
+kind: Config
+preferences: {}
+users:
+- name: {{ kubectl.config.props.user.name }}
+  user:
+    as-user-extra: {}
+    password: {{ kubectl.config.props.user.password }}
+    username: {{ kubectl.config.props.user.name }}

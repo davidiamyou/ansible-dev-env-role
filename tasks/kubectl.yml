@@ -1,0 +1,66 @@
+---
+  - name: "Check if kubectl exists"
+    stat:
+      path: "{{ kubectl.installDir }}/kubectl"
+    register: oldKube
+
+  # =====================================
+  # Remove old installation if instructed
+  # =====================================
+  - name: "Remove old kubectl if <forceReinstall> is on"
+    file:
+      path: "{{ kubectl.installDir }}/kubectl"
+      state: absent
+    when: oldKube.stat.exists and kubectl.forceReinstall
+
+  - name: "Remove old configuration if <forceReinstall> is on"
+    file:
+      path: "{{ kubectl.config.targetDir }}/{{ kubectl.config.name }}"
+      state: absent
+    when: oldKube.stat.exists and kubectl.forceReinstall
+
+  # ===============
+  # Install kubectl
+  # ===============
+  - name: "Download kubectl binary"
+    get_url:
+      url: "https://storage.googleapis.com/kubernetes-release/release/v{{ kubectl.version }}/bin/linux/amd64/kubectl"
+      dest: "{{ ops.downloadDir }}/kubectl"
+    when: not oldKube.stat.exists or kubectl.forceReinstall
+
+  - name: "Change kubectl permission"
+    file:
+      path: "{{ ops.downloadDir }}/kubectl"
+      mode: a+x
+    when: not oldKube.stat.exists or kubectl.forceReinstall
+
+  - name: "Move kubectl into place"
+    command: "mv {{ ops.downloadDir }}/kubectl {{ kubectl.installDir }}"
+    when: not oldKube.stat.exists or kubectl.forceReinstall
+
+  # =================
+  # Configure kubectl
+  # =================
+  - name: "Make .kube directory"
+    file:
+      path: "{{ kubectl.config.targetDir }}"
+      state: directory
+    when: not oldKube.stat.exists or kubectl.forceReinstall
+
+  - name: "Move user provided configuration, if <kubectl.config.sourceFile> is set"
+    copy:
+      src: "{{ kubectl.config.sourceFile }}"
+      dest: "{{ kubectl.config.targetDir }}/{{ kubectl.config.name }}"
+      owner: vagrant
+      group: vagrant
+      mode: 0644
+    when: (not oldKube.stat.exists or kubectl.forceReinstall) and (kubectl.config.sourceFile is defined)
+
+  - name: "Render and move configuration, if <kubectl.config.sourceFile> is not set"
+    template:
+      src: kube.config.yml.j2
+      dest: "{{ kubectl.config.targetDir }}/{{ kubectl.config.name }}"
+      owner: vagrant
+      group: vagrant
+      mode: 0644
+    when: (not oldKube.stat.exists or kubectl.forceReinstall) and (kubectl.config.sourceFile is undefined)

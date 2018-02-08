@@ -1,0 +1,41 @@
+---
+  - name: "Check if helm exists"
+    stat:
+      path: "{{ helm.installDir }}/helm"
+    register: oldHelm
+
+  # =====================================
+  # Remove old installation if instructed
+  # =====================================
+  - name: "Remove helm if <forceReinstall> is on"
+    file:
+      path: "{{ helm.installDir }}/helm"
+      state: absent
+    when: oldHelm.stat.exists and helm.forceReinstall
+
+  # ============
+  # Install Helm
+  # ============
+  - name: "Download helm"
+    get_url:
+      url: "https://storage.googleapis.com/kubernetes-helm/helm-v{{ helm.version }}-linux-amd64.tar.gz"
+      dest: "{{ ops.downloadDir }}/helm.tar.gz"
+    when: (not oldHelm.stat.exists) or (helm.forceReinstall)
+
+  - name: "Unarchive helm binaries"
+    unarchive:
+      src: "{{ ops.downloadDir }}/helm.tar.gz"
+      dest: "{{ ops.downloadDir }}"
+    when: (not oldHelm.stat.exists) or (helm.forceReinstall)
+
+  - name: "Move helm into place"
+    command: "mv {{ ops.downloadDir }}/linux-amd64/helm {{ helm.installDir }}"
+    when: (not oldHelm.stat.exists) or (helm.forceReinstall)
+
+  # ========
+  # Clean up
+  # ========
+  - name: "Clean up downloaded files"
+    file:
+      path: "{{ ops.downloadDir }}/helm.tar.gz"
+      state: absent
