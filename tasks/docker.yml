@@ -1,0 +1,44 @@
+---
+  - name: "Uninstall legacy docker"
+    apt:
+      name: "{{ item }}"
+      state: absent
+    with_items:
+      - docker
+      - docker-engine
+      - docker.io
+
+  - name: "Check if docker exists"
+    stat:
+      path: /usr/bin/docker
+    register: dockerInstall
+
+  - name: "Install docker requirements"
+    apt:
+      name: "{{ item }}"
+      state: present
+    with_items:
+      - apt-transport-https
+      - ca-certificates
+      - curl
+      - software-properties-common
+    when: not dockerInstall.stat.exists
+
+  - name: "Add docker apt gpg key"
+    apt_key:
+      url: https://download.docker.com/linux/ubuntu/gpg
+      state: present
+    when: not dockerInstall.stat.exists
+
+  - name: "add docker apt repository"
+    apt_repository:
+      repo: "deb [arch=amd64] https://download.docker.com/linux/ubuntu xenial stable"
+      state: present
+    when: not dockerInstall.stat.exists
+
+  - name: "install docker"
+    apt:
+      name: docker-ce
+      state: present
+      update_cache: yes
+    when: not dockerInstall.stat.exists
