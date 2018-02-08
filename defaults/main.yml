@@ -9,7 +9,7 @@
     kubectl: false
     helm: false
     docker: false
-    mongo: false
+    mongodb: false
     mariadb: false
     redis: false
     httpie: false
@@ -89,6 +89,20 @@
     forceReinstall: false
     version: 2.6.0
     installDir: /usr/local/bin
+
+  # configuration defaults for mongoDB
+  mongo:
+    version: 3.6
+    config:
+      # if <mongo.config.sourceFile> is defined, script will
+      # copy <mongo.config.sourceFile> to <mongo.config.targetFile>,
+      # else, script will render the template with props.
+      # sourceFile:
+      targetFile: /etc/mongod.conf
+      props:
+        port: 27017
+        ip:
+          - 127.0.0.1
 
   # defaults for playbook operations (internal)
   ops:

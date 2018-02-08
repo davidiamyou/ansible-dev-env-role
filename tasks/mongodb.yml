@@ -1,0 +1,67 @@
+---
+  # =================
+  # Check environment
+  # =================
+  - name: "Check if mongo exists"
+    stat:
+      path: /usr/bin/mongod
+    register: oldMongo
+
+  # ===============
+  # Install MongoDB
+  # ===============
+  - name: "Add MongoDB apt key"
+    apt_key:
+      keyserver: hkp://keyserver.ubuntu.com:80
+      id: 2930ADAE8CAF5059EE73BB4B58712A2291FA4AD5
+      state: present
+    when: not oldMongo.stat.exists
+
+  - name: "Add MongoDB apt repo"
+    apt_repository:
+      repo: "deb https://repo.mongodb.org/apt/ubuntu xenial/mongodb-org/{{ mongo.version }} multiverse"
+      state: present
+    when: not oldMongo.stat.exists
+
+  - name: "Install MongoDB"
+    apt:
+      name: "{{ item }}"
+      state: present
+    with_items:
+      - mongodb-org
+    when: not oldMongo.stat.exists
+
+  - name: "Start MongoDB"
+    service:
+      name: mongod
+      state: started
+
+  # =================
+  # Configure MongoDB
+  # =================
+  - name: "Copy configuration, if <mongo.config.sourceFile> is set"
+    copy:
+      src: "{{ mongo.config.sourceFile }}"
+      dest: "{{ mongo.config.targetFile }}"
+      owner: root
+      group: root
+      mode: 0644
+    when: (not oldMongo.stat.exists) and (mongo.config.sourceFile is defined)
+    notify: restart_mongodb
+
+  - name: "Render configuration, if <mongo.config.sourceFile> is not set"
+    template:
+      src: mongodb.service.j2
+      dest: /etc/systemd/system/mongodb.service
+      owner: root
+      group: root
+      mode: 0644
+    when: (not oldMongo.stat.exists) and (mongo.config.sourceFile is undefined)
+    notify: restart_mongodb
+
+  - name: "Configure MongoDB"
+    template:
+      src: mongod.conf.j2
+      dest: "{{ mongo.config.targetFile }}"
+    when: not oldMongo.stat.exists
+    notify: restart_mongodb

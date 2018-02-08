@@ -41,8 +41,8 @@
   - include_tasks: docker.yml
     when: install.docker
 
-  - include_tasks: mongo.yml
-    when: install.mongo
+  - include_tasks: mongodb.yml
+    when: install.mongodb
 
   - include_tasks: mariadb.yml
     when: install.mariadb
