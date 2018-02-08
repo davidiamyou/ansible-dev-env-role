@@ -1,2 +1,54 @@
 ---
-# tasks file for devenv
+  - name: "Check if OS distribution is Ubuntu xenial"
+    fail:
+      msg: "Unsupported OS. This role is only designed for Ubuntu xenial"
+    when: ansible_distribution != 'Ubuntu' or ansible_distribution_release != 'xenial'
+
+  - name: "Check if user configuration exists"
+    stat:
+      path: /home/vagrant/from-host/config
+    register: configPath
+  - name: "Include user configuration if exists"
+    include_vars:
+      dir: /home/vagrant/from-host/config
+      depth: 1
+      extensions:
+        - yaml
+        - yml
+    when: configPath.stat.isdir is defined and configPath.stat.isdir
+
+  - include_tasks: git.yml
+    when: install.git
+
+  - include_tasks: java.yml
+    when: install.java
+
+  - include_tasks: maven.yml
+    when: install.maven
+
+  - include_tasks: gradle.yml
+    when: install.gradle
+
+  - include_tasks: go.yml
+    when: install.go
+
+  - include_tasks: kubectl.yml
+    when: install.kubectl
+
+  - include_tasks: helm.yml
+    when: install.helm
+
+  - include_tasks: docker.yml
+    when: install.docker
+
+  - include_tasks: mongo.yml
+    when: install.mongo
+
+  - include_tasks: mariadb.yml
+    when: install.mariadb
+
+  - include_tasks: redis.yml
+    when: install.redis
+
+  - include_tasks: httpie.yml
+    when: install.httpie

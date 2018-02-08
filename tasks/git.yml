@@ -1,0 +1,51 @@
+---
+  - debug:
+      var: git
+
+  - name: "Check for required properties"
+    fail:
+      msg: "Property '{{ item }}' is required but not defined."
+    when: item is undefined
+    with_items:
+      - git.user.email
+      - git.user.name
+
+  - name: "Install git from apt"
+    apt:
+      name: git
+      state: present
+
+  - name: "Configure git email"
+    git_config:
+      name: user.email
+      value: "{{ git.user.email }}"
+
+  - name: "Configure git name"
+    git_config:
+      name: user.name
+      value: "{{ git.user.name }}"
+
+  - name: "Generate ssh key pair for git if git.useExistingKey=false"
+    user:
+      name: vagrant
+      generate_ssh_key: yes
+      ssh_key_bits: 2048
+      ssh_key_file: "/home/vagrant/.ssh/{{ git.keyName }}"
+    when: not git.useExistingKey
+    # TODO: notify handler to print public key to console
+
+  - name: "Copy existing key pair if git.useExistingKey=true"
+    copy:
+      src: "{{ git.existingKeyPath }}"
+      dest: "/home/vagrant/.ssh/{{ git.keyName }}"
+      owner: vagrant
+      group: vagrant
+      mode: u=rw,g-rwx,o-rwx
+    when: git.useExistingKey
+  - copy:
+      src: "{{ git.existingKeyPath }}.pub"
+      dest: "/home/vagrant/.ssh/{{ git.keyName }}.pub"
+      owner: vagrant
+      group: vagrant
+      mode: u=rw,g=r,o=r
+    when: git.useExistingKey

@@ -1,2 +1,25 @@
 ---
-# defaults file for devenv
+  # switches to turn on and off items to install.
+  install:
+    git: true
+    java: false
+    maven: false
+    gradle: false
+    go: false
+    kubectl: false
+    helm: false
+    docker: false
+    mongo: false
+    mariadb: false
+    redis: false
+    httpie: false
+
+  # configuration defaults for git.
+  git:
+    # if <useExistingKey> == false, role will try to generate a new ssh key
+    # by the name of <keyName> under ~/.ssh
+    # else, it will try to look for existing keys at the location specified
+    # by <existingKeyPath>
+    useExistingKey: false
+    existingKeyPath: /home/vagrant/from-host/ssh-keys/id_rsa
+    keyName: id_rsa
