@@ -4,18 +4,14 @@
       msg: "Unsupported OS. This role is only designed for Ubuntu xenial"
     when: ansible_distribution != 'Ubuntu' or ansible_distribution_release != 'xenial'
 
-  - name: "Check if user configuration exists"
-    stat:
-      path: /home/vagrant/from-host/config
-    register: configPath
-  - name: "Include user configuration if exists"
+  - name: "Include secret configuration if exists"
     include_vars:
-      dir: /home/vagrant/from-host/config
+      dir: "{{ ops.secretDir }}"
       depth: 1
       extensions:
         - yaml
         - yml
-    when: configPath.stat.isdir is defined and configPath.stat.isdir
+    when: ops.secretDir is defined
 
   - include_tasks: git.yml
     when: install.git

@@ -24,14 +24,14 @@ It plans to support in the future:
 Requirements
 ------------
 
-This role is solely designed for `Ubuntu xenial` Vagrant images. User also must create a yaml config file under `/home/vagrant/from-host/config` folder. The entries of that config file can be seen in the **Role Variables** section.
+This role is solely designed for `Ubuntu xenial` Vagrant images. User may choose
+to define `ops.secretDir` variable, in which YAML files containing secret
+variables like user name and password will be placed. All other variables
+may be provided to the role via the `vars` key. For details, see the
+**Role Variables** section.
 
 Configuration Options
 --------------
-
-Users can provide a list of variable overrides from yaml files placed in
-`/home/vagrant/from-host/config` folder. This folder can either be manually
-created or be loaded from the host machine running Vagrant.
 
 ### Install Toggles
 
@@ -69,6 +69,11 @@ them to `/home/vagrant/.ssh/` under the name `git.keyName`.
 
 If `git.useExistingKey` is set to `false`, it will generate a new key pair
 using the name specified by `git.keyName`.
+
+In addition, `git.user.name` and `git.user.email` must be provided. Since
+these are personal details are not suitable to be version track, users can
+choose to put it in the `ops.secretDir` directory and ignore it with version
+control.
 
 Key | Default
 --- | ---
@@ -236,3 +241,4 @@ mongo:
 Key | Default | Use
 --- | --- | ---
 `ops.downloadDir` | `/tmp` | used for downloading temporary files
+`ops.secretDir` | no default | directory, if defined, used to put secret YAML files

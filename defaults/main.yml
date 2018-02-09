@@ -21,7 +21,7 @@
     # else, it will try to look for existing keys at the location specified
     # by <existingKeyPath>
     useExistingKey: false
-    existingKeyPath: /home/vagrant/from-host/ssh-keys/id_rsa
+    existingKeyPath: /home/vagrant/work/provision/.ssh/id_rsa
     keyName: id_rsa
 
   # configuration defaults for installing OpenJDK
