@@ -65,3 +65,11 @@
       dest: "{{ mongo.config.targetFile }}"
     when: not oldMongo.stat.exists
     notify: restart_mongodb
+
+  - name: "Setup username and password"
+    mongodb_user:
+      database: "{{ mongo.auth.database }}"
+      name: "{{ mongo.auth.user }}"
+      password: "{{ mongo.auth.password }}"
+      state: present
+    when: mongo.auth.enabled
