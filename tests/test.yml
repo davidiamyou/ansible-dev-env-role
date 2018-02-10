@@ -3,3 +3,12 @@
   become: true
   roles:
     - /home/vagrant/work/
+  vars:
+    install:
+      git: false
+      mongodb: true
+    mongo:
+      auth:
+        enabled: true
+        user: sso
+        password: s3cret

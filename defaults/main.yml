@@ -105,7 +105,7 @@
           - 127.0.0.1
     auth:
       enabled: false
-      # database:
+      roles: readWriteAnyDatabase
       # user:
       # password:
 

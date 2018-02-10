@@ -66,10 +66,17 @@
     when: not oldMongo.stat.exists
     notify: restart_mongodb
 
+  - name: "Install PyMongo package"
+    apt:
+      name: python-pymongo
+      state: latest
+    when: mongo.auth.enabled
+
   - name: "Setup username and password"
     mongodb_user:
-      database: "{{ mongo.auth.database }}"
+      database: admin
       name: "{{ mongo.auth.user }}"
       password: "{{ mongo.auth.password }}"
+      roles: "{{ mongo.auth.roles }}"
       state: present
     when: mongo.auth.enabled

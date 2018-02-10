@@ -215,12 +215,24 @@ file to `mongo.config.targetFile`; otherwise, it will try to render the config
 file using values under `mongo.config.props.*`. The script will restart MongoDB
 after config file is in place.
 
+If `mongo.auth.enabled` is set to `true`, the script will create an admin database
+user under the name `mongo.auth.user` and password `mongo.auth.password` with
+roles `mongo.auth.roles`. Please note that this is not the database user you
+may wanna connect to. To connect to a custom database, you still have to login
+to MongoDB and do something like:
+```
+use newDB
+db.createUser({user: "tom", pwd: "s3cret", roles:[{role:"readWrite",db:"newDB"}]})
+```
+
 Key | Default
 --- | ---
 `mongo.version` | `3.6`
 `mongo.config.targetFile` | `/etc/mongod.conf`
 `mongo.config.props.port` | `27017`
 `mongo.config.props.ip` | `listOf(127.0.0.1)`
+`mongo.auth.enabled` | `false`
+`mongo.auth.roles` | `readWriteAnyDatabase`
 
 Example config to install MongoDB and configure it listen for requests on both
 `127.0.0.1` and `192.168.35.100` interface.
