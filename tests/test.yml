@@ -6,9 +6,25 @@
   vars:
     install:
       git: false
-      mongodb: true
-    mongo:
-      auth:
-        enabled: true
-        user: sso
-        password: s3cret
+      kubectl: false
+    configure:
+      k8sPrivateRegistryImagePull: true
+    kubectl:
+      config:
+        props:
+          cluster:
+            name: juju-cluster
+            server: https://192.168.100.199:443
+            insecureSkipTLSVerify: true
+          context:
+            name: juju-context
+          user:
+            name: admin
+            password: Ilmmad4g
+    k8sPrivateRegistryImagePull:
+      namespace: test
+    docker:
+      user:
+        name: davidiamyou
+        password: Ilmmad4g
+        email: davidiamyou@gmail.com

@@ -48,3 +48,6 @@
 
   - include_tasks: httpie.yml
     when: install.httpie
+
+  - include_tasks: k8sPrivateRegistryImagePull.yml
+    when: configure.k8sPrivateRegistryImagePull

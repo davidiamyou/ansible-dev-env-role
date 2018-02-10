@@ -1,0 +1,12 @@
+---
+  - name: "Configure k8s secret object to use for pulling from private registry"
+    shell: >
+      kubectl create -n {{ k8sPrivateRegistryImagePull.namespace }} \
+        --kubeconfig {{ kubectl.config.targetDir }}/{{ kubectl.config.name }} \
+        secret docker-registry {{ k8sPrivateRegistryImagePull.secretName }} \
+        --docker-server={{ docker.registryUrl }} \
+        --docker-username={{ docker.user.name }} \
+        --docker-password={{ docker.user.password }} \
+        --docker-email={{ docker.user.email }}
+    register: k8sPrivateRegistryImagePullResult
+    changed_when: k8sPrivateRegistryImagePullResult.rc == 0

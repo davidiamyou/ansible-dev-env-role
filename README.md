@@ -12,6 +12,7 @@ Currently, it supports:
 - Install `helm`
 - Install `httpie`
 - Install MongoDB and configure it
+- Configure kubernetes cluster to insert private docker registry secret
 
 It plans to support in the future:
 - Add tags to allow more granular control
@@ -59,6 +60,15 @@ install:
   redis: false
   httpie: true
 ```
+
+### Configure Toggles
+
+Configuration toggles will switch on and off which configuration actions
+to perform.
+
+Key | Default
+--- | ---
+`configure.k8sPrivateRegistryImagePull` | `false`
 
 ### Git Variables
 
@@ -125,6 +135,15 @@ maven:
   version: 3.3.0
   home: /usr/lib/maven
 ```
+
+### Docker Variables
+
+Key | Usage | Default
+--- | --- | ---
+`docker.registryUrl` | identify registry | `https://index.docker.io/v1/`
+`docker.user.name` | user name | no default
+`docker.user.password` | user password | no default
+`docker.user.email` | user email | no default
 
 ### Kubectl Variables
 
@@ -247,6 +266,29 @@ mongo:
         - 127.0.0.1
         - 192.168.35.100
 ```
+
+### k8sPrivateRegistryImagePull Variables
+
+`k8sPrivateRegistryImagePull` task configures a kubernetes docker registry
+Secret object in the cluster with the specified parameters:
+
+Key | Usage
+--- | ---
+`k8sPrivateRegistryImagePull.namespace` | The K8S namespace to create the secret, defaulted
+`kubectl.config.targetDir` | The directory for the `kubectl` config file, defaulted
+`kubectl.config.name` | The `kubectl` config file name, defaulted
+`k8sPrivateRegistryImagePull.secretName` | The name for the registry secret, defaulted
+`docker.registryUrl` | docker registry url, defaulted
+`docker.user.name` | docker username, user specified
+`docker.user.password` | docker password, user specified
+`docker.user.email` | docker email, user specified
+
+Here are the default values:
+
+Key | Default
+--- | ---
+`k8sPrivateRegistryImagePull.namespace` | `default`
+`k8sPrivateRegistryImagePull.secretName` | `regsecret`
 
 ### Other Variables
 
